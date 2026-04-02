@@ -8,6 +8,7 @@ const { es } = require('date-fns/locale');
 const express = require('express');
 const cors = require('cors');
 const Groq = require('groq-sdk');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,8 @@ app.use(express.json());
 // CONFIGURATION
 const TELEGRAM_TOKEN = '8345771818:AAFr46y69EMVJ_ykva9mS3KdAeQ2F4yYbuQ';
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '2c5da62822b44fe592c97b24aa1d198a.vcdp6sFgJDf-YyRj5ykeAWKZ';
+const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'; // Default to local but can be cloud IP
+const PREFERRED_MODEL_SOURCE = process.env.MODEL_SOURCE || 'GROQ'; // 'GROQ' or 'OLLAMA'
 
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 const groq = new Groq({ apiKey: GROQ_API_KEY });
@@ -32,17 +35,21 @@ const getEventsForDate = (date) => {
   const dd = String(date.getDate()).padStart(2, '0');
   const key = `${mm}-${dd}`;
 
-  const holidays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'holidays.json'), 'utf8'));
-  const saints = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'saints.json'), 'utf8'));
-  const worldDays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'worldDays.json'), 'utf8'));
-  const regional = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'regional.json'), 'utf8'));
+  try {
+    const holidays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'holidays.json'), 'utf8'));
+    const saints = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'saints.json'), 'utf8'));
+    const worldDays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'worldDays.json'), 'utf8'));
+    const regional = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'regional.json'), 'utf8'));
 
-  return {
-    holiday: holidays[key],
-    regional: regional[key],
-    saint: saints[key],
-    worldDay: worldDays[key]
-  };
+    return {
+      holiday: holidays[key],
+      regional: regional[key],
+      saint: saints[key],
+      worldDay: worldDays[key]
+    };
+  } catch (e) {
+    return {};
+  }
 };
 
 const formatEventMessage = (title, events) => {
@@ -90,47 +97,87 @@ bot.onText(/\/vincular/, (msg) => {
 bot.onText(/\/test/, (msg) => sendDailyUpdates());
 
 /**
- * AI POST GENERATION (GROQ)
+ * AI POST GENERATION
  */
 app.post('/api/generate-post', async (req, res) => {
-  const { fileName, eventName, nature } = req.body; // nature: 'SERIO' or 'RELAJADO'
+  const { eventName, nature, newsContext } = req.body;
 
-  try {
-    const systemPrompt = `Actúa como un Director de Estrategia de Contenidos senior. Redacta un post de LinkedIn para un Centro de Formación. No queremos un texto corporativo estándar, sino la voz de un experto que habla de tú a tú.
+  const systemPrompt = `Actúa como un Director de Estrategia de Contenidos senior. Redacta 3 variantes de un post de LinkedIn para un Centro de Formación.
+Buscamos la VOZ de un HUMANO experto, no de un bot corporativo.
 
 REGLAS DE ORO (Filtro Anti-IA):
-- Prohibido usar clichés: "En el dinámico entorno actual", "Es crucial destacar", "Un viaje hacia...", "No solo... sino también".
-- El Gancho (Hook): 2 líneas obligatorias (emocional o provocador).
-- Estructura: Gancho -> Desarrollo de máximo 3 párrafos cortos -> Cierre con pregunta debativa.
-- Ritmo: Varía longitud de frases. Usa frases muy cortas.
-- Voz: Primera persona (yo o nosotros). No uses voz pasiva.
-- "Empatía Basada en el Respeto" para temas serios y "Curiosidad Profesional" para festividades.
-- SÉ HUMANO: Escribe como si lo redactaras tras un café.
+- Prohibido usar clichés: "En el dinámico entorno actual", "Es crucial", "Un viaje hacia...", "No solo... sino también".
+- El Gancho (Hook): 2 líneas obligatorias impactantes.
+- Estructura: Gancho -> Desarrollo breve -> Cierre con pregunta debativa.
+- Ritmo: Frases cortas y contundentes.
+- Noticias: Si se proporciona contexto, úsalo para dar actualidad.
 
 Variables:
 Tema: ${eventName}
 Naturaleza: ${nature}
+Contexto de Noticias: ${newsContext || 'N/A'}
 
 IMPORTANTE: Devuelve la respuesta en formato JSON puro con esta estructura:
 {
-  "post": "El contenido del post aquí"
+  "variants": [
+    { "title": "Variante 1 (Enfoque Empatía)", "content": "..." },
+    { "title": "Variante 2 (Enfoque Autoritario)", "content": "..." },
+    { "title": "Variante 3 (Enfoque Provocador)", "content": "..." }
+  ]
 }`;
 
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: 'system', content: systemPrompt + " (Asegúrate de responder en formato JSON)" }],
-      model: "llama-3.3-70b-versatile",
-      response_format: { "type": "json_object" }
-    });
-
-    const response = JSON.parse(completion.choices[0].message.content);
-    res.json(response);
+  try {
+    if (PREFERRED_MODEL_SOURCE === 'OLLAMA') {
+      const resp = await axios.post(`${OLLAMA_HOST}/api/generate`, {
+        model: "llama3.3",
+        prompt: systemPrompt,
+        stream: false,
+        format: "json"
+      });
+      const data = JSON.parse(resp.data.response);
+      res.json(data);
+    } else {
+      const completion = await groq.chat.completions.create({
+        messages: [{ role: 'system', content: systemPrompt + " (Asegúrate de responder en formato JSON)" }],
+        model: "llama-3.3-70b-versatile",
+        response_format: { "type": "json_object" }
+      });
+      const data = JSON.parse(completion.choices[0].message.content);
+      res.json(data);
+    }
   } catch (error) {
-    console.error('Groq Error:', error);
-    res.status(500).json({ error: 'Error generating post' });
+    console.error('Generation Error:', error);
+    res.status(500).json({ error: 'Error generating variants' });
   }
+});
+
+/**
+ * NEWS SEARCH (SIMULATED FOR NOW WITH REAL DATA FOR DEMO)
+ */
+app.get('/api/search-news', (req, res) => {
+  const query = req.query.q || '';
+  // Simulated news response based on the search I performed
+  const news = [
+    {
+      id: 1,
+      title: "Campaña 'Menos juicios. Más apoyos' - Día Autismo 2026",
+      snippet: "La Confederación Autismo España pide evitar prejuicios cotidianos ante comportamientos diferentes, promoviendo la neurodiversidad.",
+      source: "servimedia.es",
+      url: "https://www.servimedia.es"
+    },
+    {
+      id: 2,
+      title: "Asamblea de Madrid se ilumina de azul",
+      snippet: "Edificios emblemáticos de toda España se tiñen de azul para visibilizar el TEA y las necesidades de salud mental.",
+      source: "europapress.es",
+      url: "https://www.europapress.es"
+    }
+  ];
+  res.json({ results: news });
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server and Bot running. API on port ${PORT}`);
+  console.log(`Server running. API on port ${PORT}`);
 });
+
