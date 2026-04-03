@@ -39,7 +39,7 @@ function EventSidebar({ selectedDate, events }) {
       setWizardStep('CHOOSING');
     } catch (err) {
       console.error(err);
-      alert('Error al planificar. Revisa el servidor.');
+      alert('Error en la redacción. Revisa que el servidor y Ollama/Groq estén activos.');
       setWizardStep('IDLE');
     } finally {
       setLoading(false);
@@ -131,15 +131,15 @@ function EventSidebar({ selectedDate, events }) {
         {/* IDLE STATE */}
         {wizardStep === 'IDLE' && (
           <div className="step-idle">
-             <div className="wizard-icon">🎯</div>
-             <h3>Planificación Estratégica</h3>
-             <p>Buscaremos noticias reales y propondremos 3 ángulos para tu post de LinkedIn.</p>
+             <div className="wizard-icon">✍️</div>
+             <h3>Asistente de Redacción</h3>
+             <p>Analizaremos el contexto actual para redactar el mejor post para hoy.</p>
              <button 
                onClick={startPlanning} 
                disabled={!hasEvents}
                className="primary-btn"
              >
-               🚀 Comenzar Planificación
+               🚀 Preparar noticia
              </button>
           </div>
         )}
@@ -148,7 +148,7 @@ function EventSidebar({ selectedDate, events }) {
         {wizardStep === 'PLANNING' && (
           <div className="step-loading">
             <div className="spinner"></div>
-            <p>Analizando noticias de Google News y diseñando estrategias...</p>
+            <p>Buscando contexto y preparando borradores...</p>
           </div>
         )}
 

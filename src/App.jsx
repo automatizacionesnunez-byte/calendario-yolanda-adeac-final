@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Calendar from './components/Calendar';
 import EventSidebar from './components/EventSidebar';
+import SidebarLeft from './components/SidebarLeft';
 import holidaysData from './data/holidays.json';
 import saintsData from './data/saints.json';
 import worldDaysData from './data/worldDays.json';
@@ -36,6 +37,7 @@ function App() {
 
   return (
     <div className="app-container">
+      <SidebarLeft />
       <section className="legend-section glass-panel">
         <h2 style={{ marginBottom: '1.5rem', fontSize: '1.2rem' }}>Leyenda</h2>
         <div className="calendar-legend">
