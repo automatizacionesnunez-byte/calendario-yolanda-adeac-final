@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../apiConfig';
 
 function SidebarLeft() {
   const [status, setStatus] = useState({ linked: false, count: 0 });
@@ -13,7 +14,7 @@ function SidebarLeft() {
 
   const checkStatus = async () => {
     try {
-      const resp = await fetch('http://localhost:3001/api/telegram/status');
+      const resp = await fetch(API_ENDPOINTS.TELEGRAM_STATUS);
       const data = await resp.json();
       setStatus(data);
     } catch (e) {
@@ -24,7 +25,7 @@ function SidebarLeft() {
   const generateCode = async () => {
     setLoading(true);
     try {
-      const resp = await fetch('http://localhost:3001/api/telegram/generate-code', { method: 'POST' });
+      const resp = await fetch(API_ENDPOINTS.TELEGRAM_GEN_CODE, { method: 'POST' });
       const data = await resp.json();
       setLinkData(data);
     } catch (e) {

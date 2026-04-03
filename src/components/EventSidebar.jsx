@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../apiConfig';
 
 function EventSidebar({ selectedDate, events }) {
   // WIZARD STATES: 'IDLE', 'PLANNING', 'CHOOSING', 'GENERATING', 'FINAL'
@@ -29,7 +30,7 @@ function EventSidebar({ selectedDate, events }) {
     setWizardStep('PLANNING');
     setLoading(true);
     try {
-      const resp = await fetch('http://localhost:3001/api/plan-post', {
+      const resp = await fetch(API_ENDPOINTS.PLAN_POST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventName: allEventsString })
@@ -56,7 +57,7 @@ function EventSidebar({ selectedDate, events }) {
     const newsContext = planData.newsUsed?.[0] ? `${planData.newsUsed[0].title}: ${planData.newsUsed[0].snippet}` : '';
 
     try {
-      const resp = await fetch('http://localhost:3001/api/generate-full-post', {
+      const resp = await fetch(API_ENDPOINTS.GEN_POST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -82,7 +83,7 @@ function EventSidebar({ selectedDate, events }) {
     if (!refineText) return;
     setLoading(true);
     try {
-      const resp = await fetch('http://localhost:3001/api/refine-post', {
+      const resp = await fetch(API_ENDPOINTS.REFINE_POST, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
