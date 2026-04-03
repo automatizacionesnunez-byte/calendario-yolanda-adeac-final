@@ -20,19 +20,23 @@ const CHATS_FILE = '/tmp/chats.json';
 const LINKING_CODES = new Map();
 
 // Helper to load data (moved logic from server/index.js)
-const DATA_DIR = path.join(process.cwd(), 'src/data');
+// Use direct require for JSON files to ensure they are bundled by Vercel
+const holidays = require('../src/data/holidays.json');
+const saints = require('../src/data/saints.json');
+const worldDays = require('../src/data/worldDays.json');
+const regional = require('../src/data/regional.json');
 
 const getEventsForDate = (date) => {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
   const key = `${mm}-${dd}`;
-  try {
-    const holidays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'holidays.json'), 'utf8'));
-    const saints = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'saints.json'), 'utf8'));
-    const worldDays = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'worldDays.json'), 'utf8'));
-    const regional = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'regional.json'), 'utf8'));
-    return { holiday: holidays[key], regional: regional[key], saint: saints[key], worldDay: worldDays[key] };
-  } catch (e) { return {}; }
+  
+  return { 
+    holiday: holidays[key], 
+    regional: regional[key], 
+    saint: saints[key], 
+    worldDay: worldDays[key] 
+  };
 };
 
 /** API LOGIC **/
