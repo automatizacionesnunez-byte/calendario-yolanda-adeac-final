@@ -39,7 +39,10 @@ const getEventsForDate = (date) => {
   };
 };
 
-/** API LOGIC **/
+// Stateless code for vinculation
+const STATIC_LINK_CODE = "123456";
+
+/** AI LOGIC **/
 const runAI = async (prompt, isJson = true) => {
   try {
     const resp = await axios.post('https://ollama.com/api/chat', {
@@ -81,13 +84,81 @@ app.post('/api/generate-full-post', async (req, res) => {
 });
 
 app.post('/api/telegram/generate-code', (req, res) => {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  LINKING_CODES.set(code, Date.now());
-  res.json({ code, botUsername: "CALENDARIO_ADEACBOT" });
+  res.json({ code: STATIC_LINK_CODE, botUsername: "CALENDARIO_ADEACBOT" });
+});
+
+// Vercel Telegram Webhook endpoint
+let cachedChats = [];
+app.post('/api/telegram/webhook', (req, res) => {
+  const body = req.body;
+  if (body.message && body.message.text) {
+    const text = body.message.text;
+    const chatId = body.message.chat.id;
+    
+    if (text.startsWith(`/start ${STATIC_LINK_CODE}`) || text.startsWith('/vincular')) {
+      if (!cachedChats.includes(chatId)) cachedChats.push(chatId);
+      axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        chat_id: chatId,
+        text: "✅ ¡Cuenta vinculada con éxito en Vercel! Importante: Añade este Chat ID (" + chatId + ") a las Variables de Entorno de Vercel como TELEGRAM_CHAT_ID para que los avisos automáticos funcionen siempre."
+      }).catch(console.error);
+    }
+  }
+  res.sendStatus(200);
+});
+
+// Setup webhook automatically (Only hits API when hitting this endpoint as a ping)
+app.get('/api/telegram/setup-webhook', async (req, res) => {
+  const host = req.headers.host;
+  const webhookUrl = `https://${host}/api/telegram/webhook`;
+  try {
+    const r = await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook`, { url: webhookUrl });
+    res.json({ success: true, url: webhookUrl, telegramResponse: r.data });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/telegram/status', (req, res) => {
-  res.json({ linked: false, count: 0, note: "Persistence disabled on Vercel" });
+  res.json({ linked: cachedChats.length > 0, count: cachedChats.length, note: "Serverless Mode" });
+});
+
+const formatEventMessage = (title, events) => {
+  let message = `<b>${title}</b>\n`;
+  let hasEvents = false;
+  if (events.holiday) { message += `🎉 Festivo Nacional: ${events.holiday}\n`; hasEvents = true; }
+  if (events.regional) { message += `🏛️ Festivo Autonómico: ${events.regional}\n`; hasEvents = true; }
+  if (events.worldDay) { message += `🌍 Día Internacional: ${events.worldDay}\n`; hasEvents = true; }
+  if (events.saint) { message += `⛪ Santo: ${events.saint}\n`; hasEvents = true; }
+  return hasEvents ? message : '';
+};
+
+app.get('/api/cron/daily', async (req, res) => {
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) return res.status(400).json({ error: "Missing TELEGRAM_CHAT_ID env var" });
+  
+  const today = new Date();
+  const tomorrow = addDays(today, 1);
+  const todayMsg = formatEventMessage(`📅 EVENTOS HOY (${format(today, 'dd/MM/yyyy')})`, getEventsForDate(today));
+  const tomorrowMsg = formatEventMessage(`🔔 RECORDATORIO PARA MAÑANA (${format(tomorrow, 'dd/MM/yyyy')})`, getEventsForDate(tomorrow));
+
+  let finalMessage = "";
+  if (todayMsg) finalMessage += todayMsg + "\n";
+  if (tomorrowMsg) finalMessage += tomorrowMsg;
+
+  if (finalMessage) {
+    try {
+      await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        chat_id: chatId,
+        text: finalMessage,
+        parse_mode: 'HTML'
+      });
+      res.json({ success: true, message: "Avisos enviados." });
+    } catch (e) {
+      res.status(500).json({ error: "Error sending to telegram" });
+    }
+  } else {
+    res.json({ success: true, message: "No hay eventos." });
+  }
 });
 
 module.exports = app;
