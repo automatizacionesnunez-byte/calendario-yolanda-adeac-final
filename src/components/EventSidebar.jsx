@@ -186,63 +186,68 @@ function EventSidebar({ selectedDate, events }) {
         {wizardStep === 'FINAL' && finalPost && (
           <div className="step-final fade-in">
             <div className="final-header">
-               <h4>✨ Post Generado</h4>
+                <h4>✨ Post Generado</h4>
                <div className="actions">
-                 <button onClick={() => setPreviewMode(!previewMode)} className="icon-btn">{previewMode ? '✏️ Editar' : '👁️ Previsualizar'}</button>
-                 <button onClick={() => copyToClipboard(finalPost.content)} className="icon-btn">📋</button>
+                 <button onClick={() => setPreviewMode(true)} className="icon-btn">👁️ Preview</button>
+                 <button onClick={() => copyToClipboard(finalPost.content)} className="icon-btn">📋 Copiar</button>
                  <button onClick={addToHistory} className="icon-btn">💾</button>
                </div>
             </div>
 
-            {previewMode ? (
-              <div className="linkedin-mockup fade-in">
-                 <div className="li-header">
-                    <div className="li-avatar">🗓️</div>
-                    <div className="li-user-info">
-                      <span className="li-name">Yolanda ADEAC</span>
-                      <span className="li-headline">Administración Pública • Ahora • 🌍</span>
-                    </div>
-                 </div>
-                 <div className="li-content">
-                   {finalPost.content.split('\n').map((para, i) => (
-                      <p key={i}>{para}</p>
-                   ))}
-                 </div>
-                 <div className="li-mock-toolbar">
-                    <div className="li-icons-left">
-                       <span className="li-icon">📷</span>
-                       <span className="li-icon">📅</span>
-                       <span className="li-icon">⭐</span>
-                       <span className="li-icon">➕</span>
-                    </div>
-                    <button className="li-publish-btn" onClick={() => copyToClipboard(finalPost.content)}>Publicar</button>
-                 </div>
-              </div>
-            ) : (
-              <>
-                <textarea 
-                  className="post-editor"
-                  value={finalPost.content}
-                  onChange={(e) => setFinalPost({...finalPost, content: e.target.value})}
-                  rows={12}
-                />
-                <div className="refine-chat">
-                  <input 
-                    type="text" 
-                    placeholder="Pedir cambios a la IA... (ej: más corto)"
-                    value={refineText}
-                    onChange={(e) => setRefineText(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && refinePost()}
-                  />
-                  <button onClick={refinePost} disabled={loading || !refineText}>
-                    {loading ? '...' : '➤'}
-                  </button>
-                </div>
-              </>
-            )}
+            <textarea 
+              className="post-editor"
+              value={finalPost.content}
+              onChange={(e) => setFinalPost({...finalPost, content: e.target.value})}
+              rows={12}
+            />
+            <div className="refine-chat">
+              <input 
+                type="text" 
+                placeholder="Pedir cambios a la IA... (ej: más corto)"
+                value={refineText}
+                onChange={(e) => setRefineText(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && refinePost()}
+              />
+              <button onClick={refinePost} disabled={loading || !refineText}>
+                {loading ? '...' : '➤'}
+              </button>
+            </div>
             
             <button className="secondary-btn" style={{marginTop: '1rem', width: '100%'}} onClick={() => { setWizardStep('CHOOSING'); setPreviewMode(false); }}>
               🔄 Probar otro ángulo
+            </button>
+
+            {/* MODAL MOCKUP LINKEDIN */}
+            {previewMode && (
+              <div className="preview-modal-overlay fade-in" onClick={() => setPreviewMode(false)}>
+                <div className="preview-modal-content linkedin-mockup" onClick={(e) => e.stopPropagation()}>
+                   <button className="li-close-btn" onClick={() => setPreviewMode(false)}>✕</button>
+                   <div className="li-header">
+                      <div className="li-avatar">🗓️</div>
+                      <div className="li-user-info">
+                        <span className="li-name">Yolanda ADEAC</span>
+                        <span className="li-headline">Administración Pública • Ahora • 🌍</span>
+                      </div>
+                   </div>
+                   <div className="li-content">
+                     {finalPost.content.split('\n').map((para, i) => (
+                        <p key={i}>{para}</p>
+                     ))}
+                   </div>
+                   <div className="li-mock-toolbar">
+                      <div className="li-icons-left">
+                         <span className="li-icon">📷</span>
+                         <span className="li-icon">📅</span>
+                         <span className="li-icon">⭐</span>
+                         <span className="li-icon">➕</span>
+                      </div>
+                      <button className="li-publish-btn" onClick={() => copyToClipboard(finalPost.content)}>Copiar y Publicar</button>
+                   </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}Probar otro ángulo
             </button>
           </div>
         )}
@@ -313,10 +318,22 @@ function EventSidebar({ selectedDate, events }) {
         .history-item { font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; padding: 5px; border-radius: 4px; }
         .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
 
-        /* LINKEDIN MOCKUP */
+        /* LINKEDIN MOCKUP MODAL */
+        .preview-modal-overlay {
+           position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+           background: rgba(0,0,0,0.6); z-index: 9999; display: flex; justify-content: center; align-items: center;
+           backdrop-filter: blur(4px);
+        }
+        .preview-modal-content {
+           width: 90%; max-width: 550px; position: relative; max-height: 90vh; overflow-y: auto;
+           box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: none;
+        }
+        .li-close-btn { position: absolute; top: 12px; right: 12px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #666; font-weight: bold; }
+        .li-close-btn:hover { color: #000; }
+        
         .linkedin-mockup { 
-           background: #ffffff; color: #000000; border-radius: 8px; padding: 12px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-           border: 1px solid #dce6f1; text-align: left;
+           background: #ffffff; color: #000000; border-radius: 8px; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+           text-align: left;
         }
         .li-header { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 12px; gap: 10px; }
         .li-avatar { width: 48px; height: 48px; min-width: 48px; border-radius: 50%; background: #eef3f8; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; }
