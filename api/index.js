@@ -67,7 +67,11 @@ const runAI = async (prompt, isJson = true) => {
 
 app.post('/api/plan-post', async (req, res) => {
   const { eventName } = req.body;
-  const prompt = `Propón 3 ÁNGULOS estratégicos para un post de LinkedIn sobre "${eventName}". Devuelve JSON ESTRICTO con este formato exacto: { "angles": [{ "id": 1, "title": "...", "description": "...", "newsRef": "Opcional" }, ... ] }`;
+  const prompt = `Actúa como Director de Comunicación de un Centro Educativo Privado de prestigio.
+El evento u efeméride de hoy es: "${eventName}".
+Propón 3 ÁNGULOS estratégicos para redactar una publicación institucional en redes sociales.
+Los enfoques deben estar orientados a relacionar el evento con la educación, el desarrollo de los alumnos, la innovación o valores del centro.
+Devuelve JSON ESTRICTO con este formato exacto: { "angles": [{ "id": 1, "title": "...", "description": "...", "newsRef": "Idea para acompañar con foto/recurso" }, ... ] }`;
   try {
     const aiData = await runAI(prompt);
     res.json(aiData);
@@ -76,7 +80,11 @@ app.post('/api/plan-post', async (req, res) => {
 
 app.post('/api/generate-full-post', async (req, res) => {
   const { eventName, chosenAngle } = req.body;
-  const prompt = `Redacta un post completo sobre ${eventName} con el ángulo ${chosenAngle.title}. Devuelve JSON: { "content": "..." }`;
+  const prompt = `Actúa como Director de Comunicación de un Centro Educativo Privado.
+Redacta el texto FINAL de un post institucional sobre "${eventName}" utilizando este enfoque estratégico: "${chosenAngle.title}" - "${chosenAngle.description}".
+El tono debe ser profesional, inspirador y cercano, destacando el impacto positivo en los alumnos y la comunidad escolar. 
+Añade emojis adecuados y llamadas a la acción (CTAs) sutiles.
+Devuelve JSON ESTRICTO con este formato: { "content": "Aquí va todo el texto del post..." }`;
   try {
     const data = await runAI(prompt);
     res.json(data);
