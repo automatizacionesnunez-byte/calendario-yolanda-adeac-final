@@ -35,6 +35,21 @@ function SidebarLeft() {
     }
   };
 
+  const setupWebhook = async () => {
+    try {
+      const resp = await fetch(API_ENDPOINTS.TELEGRAM_SETUP_WEBHOOK);
+      const data = await resp.json();
+      if(data.success) {
+        alert("✅ Conexión del servidor sincronizada en la nube correctamente.");
+      } else {
+        alert("❌ Hubo un error al sincronizar: " + JSON.stringify(data));
+      }
+    } catch (e) {
+      alert("Error de conexión con el servidor: " + e.message);
+    }
+  };
+
+
   return (
     <div className="sidebar-left glass-panel">
       <div className="sidebar-header">
@@ -73,6 +88,9 @@ function SidebarLeft() {
           <li>8:50 AM (Hoy)</li>
           <li>8:50 AM (Mañana)</li>
         </ul>
+        <button className="sync-server-btn" onClick={setupWebhook}>
+          ☁️ Sync Servidor Vercel
+        </button>
       </div>
 
       <style jsx>{`
@@ -100,8 +118,14 @@ function SidebarLeft() {
         }
         
         .bot-info { font-size: 0.75rem; color: var(--text-secondary); border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
-        .bot-info ul { margin-top: 5px; padding-left: 15px; }
+        .bot-info ul { margin-top: 5px; padding-left: 15px; margin-bottom: 12px; }
         
+        .sync-server-btn {
+          width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.2); 
+          color: white; padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
+        }
+        .sync-server-btn:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.4); }
+
         .text-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.7rem; }
       `}</style>
     </div>
