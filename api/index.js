@@ -67,7 +67,7 @@ const runAI = async (prompt, isJson = true) => {
 
 app.post('/api/plan-post', async (req, res) => {
   const { eventName } = req.body;
-  const prompt = `Propón 3 ÁNGULOS estratégicos para un post de LinkedIn sobre "${eventName}". Devuelve JSON: { "angles": [...] }`;
+  const prompt = `Propón 3 ÁNGULOS estratégicos para un post de LinkedIn sobre "${eventName}". Devuelve JSON ESTRICTO con este formato exacto: { "angles": [{ "id": 1, "title": "...", "description": "...", "newsRef": "Opcional" }, ... ] }`;
   try {
     const aiData = await runAI(prompt);
     res.json(aiData);
@@ -88,25 +88,32 @@ app.post('/api/telegram/generate-code', (req, res) => {
 });
 
 // Vercel Telegram Webhook endpoint
-let cachedChats = [];
-app.post('/api/telegram/webhook', (req, res) => {
+app.post('/api/telegram/webhook', async (req, res) => {
   const body = req.body;
   if (body.message && body.message.text) {
     const text = body.message.text;
     const chatId = body.message.chat.id;
     
     if (text.startsWith(`/start ${STATIC_LINK_CODE}`) || text.startsWith('/vincular')) {
-      if (!cachedChats.includes(chatId)) cachedChats.push(chatId);
-      axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-        chat_id: chatId,
-        text: "✅ ¡Cuenta vinculada con éxito en Vercel! Importante: Añade este Chat ID (" + chatId + ") a las Variables de Entorno de Vercel como TELEGRAM_CHAT_ID para que los avisos automáticos funcionen siempre."
-      }).catch(console.error);
+      try {
+        // Save ChatID directly into Telegram Bot Description (Zero-Config Database Hack)
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setMyDescription`, {
+          description: `Base de datos interna. NO BORRAR.\n[CHAT_DB:${chatId}]`
+        });
+
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+          chat_id: chatId,
+          text: "✅ ¡Cuenta vinculada mágicamente! ✨\nHe guardado tu conexión directamente en Telegram, por lo que ya NO necesitas configurar manualmente el Chat ID en Vercel.\nTodos tus avisos automáticos funcionarán correctamente desde la nube."
+        });
+      } catch (err) {
+        console.error("Error setting bot description as DB:", err);
+      }
     }
   }
   res.sendStatus(200);
 });
 
-// Setup webhook automatically (Only hits API when hitting this endpoint as a ping)
+// Setup webhook automatically 
 app.get('/api/telegram/setup-webhook', async (req, res) => {
   const host = req.headers.host;
   const webhookUrl = `https://${host}/api/telegram/webhook`;
@@ -118,8 +125,15 @@ app.get('/api/telegram/setup-webhook', async (req, res) => {
   }
 });
 
-app.get('/api/telegram/status', (req, res) => {
-  res.json({ linked: cachedChats.length > 0, count: cachedChats.length, note: "Serverless Mode" });
+app.get('/api/telegram/status', async (req, res) => {
+  // Read if it's linked from the Telegram DB Hack
+  try {
+    const resp = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getMyDescription`);
+    const isLinked = resp.data?.result?.description?.includes('[CHAT_DB:');
+    res.json({ linked: isLinked, count: isLinked ? 1 : 0, note: "Serverless Mode (Native Telegram DB)" });
+  } catch(e) {
+    res.json({ linked: false, count: 0 });
+  }
 });
 
 const formatEventMessage = (title, events) => {
@@ -133,31 +147,39 @@ const formatEventMessage = (title, events) => {
 };
 
 app.get('/api/cron/daily', async (req, res) => {
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!chatId) return res.status(400).json({ error: "Missing TELEGRAM_CHAT_ID env var" });
-  
-  const today = new Date();
-  const tomorrow = addDays(today, 1);
-  const todayMsg = formatEventMessage(`📅 EVENTOS HOY (${format(today, 'dd/MM/yyyy')})`, getEventsForDate(today));
-  const tomorrowMsg = formatEventMessage(`🔔 RECORDATORIO PARA MAÑANA (${format(tomorrow, 'dd/MM/yyyy')})`, getEventsForDate(tomorrow));
+  try {
+    // Retrieve persistence from Telegram bot description
+    const descResp = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getMyDescription`);
+    const desc = descResp.data?.result?.description || "";
+    const match = desc.match(/\[CHAT_DB:(.+)\]/);
+    
+    if (!match || !match[1]) {
+      return res.status(400).json({ error: "No target chat connected in Telegram DB." });
+    }
+    
+    const chatId = match[1];
+    
+    const today = new Date();
+    const tomorrow = addDays(today, 1);
+    const todayMsg = formatEventMessage(`📅 EVENTOS HOY (${format(today, 'dd/MM/yyyy')})`, getEventsForDate(today));
+    const tomorrowMsg = formatEventMessage(`🔔 RECORDATORIO PARA MAÑANA (${format(tomorrow, 'dd/MM/yyyy')})`, getEventsForDate(tomorrow));
 
-  let finalMessage = "";
-  if (todayMsg) finalMessage += todayMsg + "\n";
-  if (tomorrowMsg) finalMessage += tomorrowMsg;
+    let finalMessage = "";
+    if (todayMsg) finalMessage += todayMsg + "\n";
+    if (tomorrowMsg) finalMessage += tomorrowMsg;
 
-  if (finalMessage) {
-    try {
+    if (finalMessage) {
       await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         chat_id: chatId,
         text: finalMessage,
         parse_mode: 'HTML'
       });
       res.json({ success: true, message: "Avisos enviados." });
-    } catch (e) {
-      res.status(500).json({ error: "Error sending to telegram" });
+    } else {
+      res.json({ success: true, message: "No hay eventos." });
     }
-  } else {
-    res.json({ success: true, message: "No hay eventos." });
+  } catch (err) {
+    res.status(500).json({ error: "Error running daily cron: " + err.message });
   }
 });
 
