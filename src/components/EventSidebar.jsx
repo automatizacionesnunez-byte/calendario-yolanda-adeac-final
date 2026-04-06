@@ -307,9 +307,15 @@ function EventSidebar({ selectedDate, events }) {
         
         .primary-btn { background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
         .primary-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .secondary-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .secondary-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .secondary-btn:hover { background: rgba(255,255,255,0.15); }
         .text-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.75rem; align-self: center; }
-        .icon-btn { background: rgba(255,255,255,0.05); border: none; color: white; padding: 5px 8px; border-radius: 4px; cursor: pointer; margin-left: 5px; font-size: 0.8rem; }
+        .icon-btn { 
+          background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; 
+          padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 5px; font-size: 0.85rem;
+          display: flex; align-items: center; gap: 6px; font-weight: 500;
+        }
+        .icon-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--accent-color); }
 
         .history-section { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); paddingTop: 1rem; }
         .history-item { font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; padding: 5px; border-radius: 4px; }
