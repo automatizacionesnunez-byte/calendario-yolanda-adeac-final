@@ -208,12 +208,12 @@ function EventSidebar({ selectedDate, events }) {
                 onChange={(e) => setRefineText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && refinePost()}
               />
-              <button onClick={refinePost} disabled={loading || !refineText}>
+              <button onClick={refinePost} disabled={loading || !refineText} className="refine-btn">
                 {loading ? '...' : '➤'}
               </button>
             </div>
             
-            <button className="secondary-btn" style={{marginTop: '1rem', width: '100%'}} onClick={() => { setWizardStep('CHOOSING'); setPreviewMode(false); }}>
+            <button className="secondary-btn" style={{marginTop: '1.5rem', width: '100%'}} onClick={() => { setWizardStep('CHOOSING'); setPreviewMode(false); }}>
               🔄 Probar otro ángulo
             </button>
 
@@ -307,15 +307,40 @@ function EventSidebar({ selectedDate, events }) {
         
         .primary-btn { background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
         .primary-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
-        .secondary-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .secondary-btn:hover { background: rgba(255,255,255,0.15); }
+        
+        .secondary-btn { 
+          background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); 
+          color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; 
+          transition: 0.2s;
+        }
+        .secondary-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+
+        .refine-chat { 
+           display: flex; gap: 8px; margin-top: 15px; 
+           background: #1a1a1a; padding: 6px; border-radius: 10px;
+           border: 1px solid rgba(255,255,255,0.2);
+           box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .refine-chat input { 
+           flex: 1; background: transparent; border: none; color: white; 
+           outline: none; padding: 10px 14px; font-size: 0.9rem;
+        }
+        .refine-btn { 
+           background: var(--accent-color); color: white; border: none; 
+           width: 44px; border-radius: 8px; cursor: pointer; 
+           font-weight: bold; transition: 0.2s;
+        }
+        .refine-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .refine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
         .text-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 0.75rem; align-self: center; }
         .icon-btn { 
           background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: white; 
-          padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 5px; font-size: 0.85rem;
-          display: flex; align-items: center; gap: 6px; font-weight: 500;
+          padding: 8px 14px; border-radius: 8px; cursor: pointer; margin-left: 5px; font-size: 0.85rem;
+          display: flex; align-items: center; gap: 8px; font-weight: 500;
+          transition: 0.2s;
         }
-        .icon-btn:hover { background: rgba(255,255,255,0.2); border-color: var(--accent-color); }
+        .icon-btn:hover { background: rgba(255,255,255,0.18); border-color: var(--accent-color); transform: translateY(-1px); }
 
         .history-section { margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); paddingTop: 1rem; }
         .history-item { font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; padding: 5px; border-radius: 4px; }

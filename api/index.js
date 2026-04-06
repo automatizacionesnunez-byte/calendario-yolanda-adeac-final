@@ -91,6 +91,23 @@ Devuelve JSON ESTRICTO con este formato: { "content": "Aquí va todo el texto de
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/refine-post', async (req, res) => {
+  const { currentPost, instruction } = req.body;
+  const prompt = `Actúa como un experto en estrategia de contenido para LinkedIn.
+Tengo este post para mi Centro Educativo:
+---
+${currentPost}
+---
+Aplica la siguiente instrucción de mejora: "${instruction}".
+Mantén el tono institucional pero hazlo más efectivo según lo pedido.
+Adicionalmente, valida el post de 0 a 10 según impacto, legibilidad y tono LinkedIn, justificando brevemente la nota al final del texto (fuera del post principal).
+Devuelve JSON ESTRICTO con este formato: { "content": "Aquí el post corregido con la validación al final..." }`;
+  try {
+    const data = await runAI(prompt);
+    res.json(data);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/telegram/generate-code', (req, res) => {
   res.json({ code: STATIC_LINK_CODE, botUsername: "CALENDARIO_ADEACBOT" });
 });
