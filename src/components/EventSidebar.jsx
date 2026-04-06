@@ -247,9 +247,6 @@ function EventSidebar({ selectedDate, events }) {
               </div>
             )}
           </div>
-        )}Probar otro ángulo
-            </button>
-          </div>
         )}
       </div>
 
