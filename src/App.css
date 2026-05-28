@@ -48,7 +48,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.2rem;
 }
 
 .header h1 {
@@ -80,8 +80,8 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: minmax(110px, 1fr);
-  gap: 12px;
+  grid-auto-rows: minmax(80px, 1fr);
+  gap: 10px;
   flex: 1;
 }
 
@@ -272,3 +272,4 @@
   font-size: 0.9rem;
   color: var(--text-secondary);
 }
+
