@@ -1,0 +1,65 @@
+{
+  "EADIC": {
+    "name": "EADIC - Escuela Abierta de Desarrollo en Ingeniería y Construcción",
+    "founded": 2010,
+    "headquarters": "Madrid, España",
+    "description": "Institución de posgrado de élite especializada en formación online y técnica de ingenieros, arquitectos y gestores del sector de la construcción y las infraestructuras a nivel global.",
+    "key_areas": [
+      {
+        "area": "BIM (Building Information Modeling)",
+        "details": "Líderes en formación BIM para edificación, infraestructuras lineales y gestión de activos (BIM Manager, Revit, Navisworks, etc.)."
+      },
+      {
+        "area": "Ingeniería de Carreteras e Infraestructuras Civiles",
+        "details": "Diseño estructural, trazado de carreteras, geotecnia aplicada, túneles, cimentaciones y mantenimiento de infraestructuras."
+      },
+      {
+        "area": "Obras Hidráulicas y Medio Ambiente",
+        "details": "Gestión integral del ciclo del agua, presas, plantas de tratamiento, drenaje urbano sostenible e ingeniería ambiental."
+      },
+      {
+        "area": "Energía, Petróleo y Renovables",
+        "details": "Energías limpias (solar, eólica), eficiencia energética en edificación, y gestión técnica y comercial de proyectos energéticos."
+      },
+      {
+        "area": "Project Management (Dirección de Proyectos)",
+        "details": "MBA y programas ejecutivos enfocados en la metodología PMI (Project Management Institute) para la gerencia de megaproyectos."
+      }
+    ],
+    "strengths": [
+      "Metodología 100% online flexible y adaptativa para profesionales en activo.",
+      "Docentes líderes y directivos en activo en las principales empresas multinacionales de ingeniería y arquitectura.",
+      "Titulaciones con doble reconocimiento y convenios de Máster Universitario con universidades europeas prestigiosas como la UCAM.",
+      "Centro Oficial Autorizado de Autodesk (Autodesk Training Center).",
+      "Red internacional de más de 20,000 alumnos y egresados en España y toda Latinoamérica (Colombia, Perú, Chile, México, etc.)."
+    ]
+  },
+  "LAR_University": {
+    "name": "LAR University (Learning, Architecture & Real Estate)",
+    "description": "El ecosistema de educación de alto impacto y tecnología avanzada en el sector inmobiliario moderno, la arquitectura icónica sostenible y el desarrollo de Smart Cities, nacido en alianza y de forma conjunta con el soporte metodológico global de EADIC.",
+    "key_areas": [
+      {
+        "area": "Desarrollo y Finanzas de Real Estate",
+        "details": "Inversión inmobiliaria, tokenización de activos (Proptech), optimización financiera de proyectos residenciales, logísticos y comerciales."
+      },
+      {
+        "area": "Arquitectura Paramétrica y Diseño Sostenible",
+        "details": "Integración de eficiencia bioclimática, diseño generativo por IA, materiales regenerativos y descarbonización en edificación."
+      },
+      {
+        "area": "Smart Cities e Innovación Urbana",
+        "details": "Movilidad eléctrica inteligente, sensórica IoT en ciudades, gemelos digitales (Digital Twins) y desarrollo urbanístico sostenible."
+      },
+      {
+        "area": "Inteligencia Artificial aplicada a la Construcción (ConTech)",
+        "details": "Uso de modelos predictivos y algoritmos de optimización para la planificación, costes, seguridad y automatización en obra."
+      }
+    ],
+    "strengths": [
+      "Enfoque corporativo disruptivo alejado de la teoría tradicional, centrado en el retorno de inversión y las tecnologías emergentes.",
+      "Mentorías directas con líderes mundiales de fondos de inversión inmobiliaria, urbanistas y arquitectos galardonados.",
+      "Acceso directo a bolsa de empleo y contactos ejecutivos del más alto nivel en promotoras, consultoras y fondos internacionales.",
+      "Desarrollo de competencias avanzadas preparadas para la economía y los retos de construcción del año 2030."
+    ]
+  }
+}
